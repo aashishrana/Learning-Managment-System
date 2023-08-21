@@ -2,6 +2,7 @@
 import express from "express"
 import cors from "cors";
 import cookieParser  from "cookie-parser";
+import morgan from "morgan";
 
 
 const app = express();
@@ -17,14 +18,14 @@ app.use(cors({
 
 app.use(cookieParser());
 
-
+app.use(morgan("dev"));
 
 app.get("/", (req, res ) => {
     res.send("Jai Shree Ram");
 })
 
 app.use("/ping" , function(req , res) {
-    res.send("/pong")
+    res.send("pong")
 })
 
 app.all("*" , (req , res) => {
