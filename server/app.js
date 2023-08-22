@@ -1,6 +1,8 @@
 // const express = require("express");
 import express from "express"
 import cors from "cors";
+import { config } from "dotenv";
+config();
 import cookieParser  from "cookie-parser";
 import morgan from "morgan";
 
@@ -27,6 +29,8 @@ app.get("/", (req, res ) => {
 app.use("/ping" , function(req , res) {
     res.send("pong")
 })
+
+// app.use("/api/v1/user", userRoutes)
 
 app.all("*" , (req , res) => {
     res.status(404).send("OOPS !! 404 page not found");

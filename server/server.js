@@ -1,4 +1,5 @@
-// const app = require("./app.js");
+import { config } from "dotenv";
+config();
 import app from "./app.js"
 import mongoose from "mongoose";
 import connectionToDB from "./config/dbConnection.js";
