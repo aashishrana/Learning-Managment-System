@@ -1,6 +1,6 @@
 import {Schema, model} from "mongoose";
 import bcrypt from "bcryptjs"
-import { Jwt } from "jsonwebtoken";
+import  jwt  from "jsonwebtoken";
 const userSchema = new Schema( {
     fullName : {
         type : "String",
@@ -70,6 +70,11 @@ userSchema.methods = {
             }
 
         )
+    },
+
+    comparePassword : async function(plainTextPassword) {
+        return await bcrypt.compare(plainTextPassword , this.password)
+
     }
 }
 
