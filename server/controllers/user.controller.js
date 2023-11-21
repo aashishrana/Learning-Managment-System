@@ -2,6 +2,10 @@ import User from "../models/user.model.js";
 import AppError from "../utils/error.util.js";
 import cloudinary from "cloudinary"
 import fs from "fs/promises"
+import sendEmail from "../utils/sendEmail.js";
+import crypto from "crypto";
+
+
 const cookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days login
   httpOnly: true,
@@ -140,7 +144,7 @@ const getProfile = async (req, res) => {
 };
 
 
-const forgotPassword = async(req, res) => {
+const forgotPassword = async(req, res , next) => {
   const {email} = req.body;
 
   if(!email) {
@@ -156,7 +160,11 @@ const forgotPassword = async(req, res) => {
 
   await user.save();
 
-  const resetPasswordURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+  const subject = 'Reset Password';
+ 
+  const message = `You can reset your password by clicking <a href=${resetPasswordUrl} target="_blank">Reset your password</a>\nIf the above link does not work for some reason then copy paste this link in new tab ${resetPasswordUrl}.\n If you have not requested this, kindly ignore.`;
 
   try {
     await sendEmail(email, subject, message);
@@ -176,7 +184,39 @@ const forgotPassword = async(req, res) => {
 }
 
 
-const resetPassword = () => {
+const resetPassword = async (req, res) => {
+  const {resetToken} = req.params;
+
+  const { password } = req.body;
+
+  const forgotPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+        const user = await User.findOne({
+          forgotPasswordToken,
+          forgotPasswordExpiry : {$gt : Date.now() }
+
+        });
+
+        if(!user) {
+          return next(
+            new AppError('Token is invalid or expired, please try again' , 404)
+          )
+        }
+
+        user.password = password;
+        user.forgotPasswordToken = undefined;
+        user.forgotPasswordExpiry = undefined;
+
+        user.save();
+
+        res.status(200).json({
+          success : true,
+          message : "Password changed successfully"
+        })
+
 
 }
 
